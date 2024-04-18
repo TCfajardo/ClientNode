@@ -12,7 +12,10 @@ def index():
     node_name = "Nodo 1"  # Reemplaza esto con el nombre real del nodo
 
     # Obtener la dirección IP del dispositivo
-    ip_address = socket.gethostbyname(socket.gethostname())
+    #ip_address = socket.gethostbyname(socket.gethostname())
+
+        # Obtener la dirección IP del adaptador de LAN inalámbrica Wi-Fi
+    ip_address = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
 
     # Obtener la hora actual del sistema
     system_time = datetime.now()

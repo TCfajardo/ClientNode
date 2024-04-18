@@ -1,0 +1,89 @@
+<!-- app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nodo Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            margin-top: 0px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            
+        }
+        .card {
+            background-color: #000000;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .card h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #c7cbcc;
+        }
+        .card h3 {
+            font-size: 16px;
+            color: #e1e3e1;
+        }
+        .logs {
+            max-width: 400px;
+            width: 100%;
+            text-align: left;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .logs h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .logs ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .logs li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Nombre del Nodo: {{ node_name }}</h1>
+            <h2>Ip: {{ ip_address }}</h2>
+            <h3>Hora del Sistema: {{ system_time }}</h3>
+            <h3>Hora Simulada: {{ simulated_time }}</h3>
+        </div>
+        <div class="logs">
+            <h2>Logs de Envío y Recepción de Datos</h2>
+            <ul>
+                <li>Log 1: Envío de datos</li>
+                <li>Log 2: Recepción de datos</li>
+                <!-- Agrega más elementos <li> según sea necesario para los logs -->
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

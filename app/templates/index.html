@@ -1,7 +1,6 @@
-<!-- app/templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +11,7 @@
             text-align: center;
             background-color: #f4f4f4;
         }
+
         .container {
             margin-top: 0px;
             display: flex;
@@ -20,6 +20,7 @@
             flex-direction: column;
             height: 70dvh;
         }
+
         .card {
             background-color: #000000;
             border-radius: 10px;
@@ -30,20 +31,24 @@
             text-align: left;
             margin-bottom: 20px;
         }
+
         .card h1 {
             font-size: 24px;
             margin-bottom: 35px;
             color: #ffffff;
         }
+
         .card h2 {
             font-size: 18px;
             margin-bottom: 8px;
             color: #c7cbcc;
         }
+
         .card h3 {
             font-size: 16px;
             color: #e1e3e1;
         }
+
         .logs {
             max-width: 400px;
             width: 100%;
@@ -53,21 +58,27 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
+
         .logs h2 {
             font-size: 18px;
             margin-bottom: 10px;
             color: #333;
         }
+
         .logs ul {
             list-style-type: none;
             padding: 0;
-            margin: 0;
+            margen: 0;
         }
+
         .logs li {
             margin-bottom: 5px;
         }
     </style>
+    <!-- Incluir el script de Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script> <!-- Verifica la versión de Socket.IO -->
 </head>
+
 <body>
     <div class="container">
         <div class="card">
@@ -79,11 +90,29 @@
         <div class="logs">
             <h2>Logs de Envío y Recepción de Datos</h2>
             <ul>
-                <li>Log 1: Envío de datos</li>
-                <li>Log 2: Recepción de datos</li>
-                <!-- Agrega más elementos <li> según sea necesario para los logs -->
+                <!-- Aquí se agregarán dinámicamente los logs -->
             </ul>
         </div>
     </div>
+
+    <!-- Script para la conexión con WebSocket -->
+    <script>
+        const socket = io('http://localhost:3000'); // Verificar que el puerto y la dirección son correctos
+
+        socket.on('connect', () => {
+            console.log('Conectado al servidor WebSocket');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Desconectado del servidor WebSocket');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.log('Error de conexión:', error);
+        });
+
+        // Otros eventos y lógica de WebSocket
+    </script>
 </body>
+
 </html>

@@ -89,30 +89,55 @@
         </div>
         <div class="logs">
             <h2>Logs de Envío y Recepción de Datos</h2>
-            <ul>
-                <!-- Aquí se agregarán dinámicamente los logs -->
+            <ul id="logs-list">
             </ul>
         </div>
     </div>
 
     <!-- Script para la conexión con WebSocket -->
-    <script>
-        const socket = io('http://localhost:3000'); // Verificar que el puerto y la dirección son correctos
+    <!-- Script para la conexión con WebSocket -->
+<script>
+    const socket = io('http://localhost:3000');
 
-        socket.on('connect', () => {
-            console.log('Conectado al servidor WebSocket');
-        });
+    socket.on('connect', () => {
+        console.log('Conectado al servidor WebSocket');
+    });
 
-        socket.on('disconnect', () => {
-            console.log('Desconectado del servidor WebSocket');
-        });
+    socket.on('disconnect', () => {
+        console.log('Desconectado del servidor WebSocket');
+    });
 
-        socket.on('connect_error', (error) => {
-            console.log('Error de conexión:', error);
-        });
+    socket.on('connect_error', (error) => {
+        console.log('Error de conexión:', error);
+    });
 
-        // Otros eventos y lógica de WebSocket
-    </script>
+    // Escuchar el evento de logs desde el servidor Flask
+    socket.on('log_message', (message) => {
+        console.log('Log recibido:', message);
+        // Agregar el log a la lista de logs en la página HTML
+        const logsList = document.getElementById('logs-list');
+        const logItem = document.createElement('li');
+        logItem.textContent = message; // Asegúrate de que el mensaje sea un string legible
+        logsList.appendChild(logItem);
+    });
+</script>
+
+
+    <!-- Script para la recarga automática de la página solo si no hay logs mostrándose -->
+<script>
+    setInterval(function() {
+        // Verificar si hay logs mostrándose en la página
+        const logsList = document.getElementById('logs-list');
+        const hasLogs = logsList && logsList.children.length > 0;
+
+        // Recargar la página solo si no hay logs mostrándose
+        if (!hasLogs) {
+            window.location.reload();
+        }
+    }, 2000); // Recargar la página cada 2 segundos (2000 milisegundos)
+</script>
+
+
 </body>
 
 </html>

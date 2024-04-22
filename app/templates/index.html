@@ -41,14 +41,17 @@
         .card h2 {
             font-size: 18px;
             margin-bottom: 8px;
-            color: #c7cbcc;
+            color: #169426;
         }
 
         .card h3 {
             font-size: 16px;
             color: #e1e3e1;
         }
-
+        .card p {
+            font-size: 10px;
+            color: #e1e3e1;
+        }
         .logs {
             max-width: 400px;
             width: 100%;
@@ -84,8 +87,8 @@
         <div class="card">
             <h1>Nombre del Nodo: {{ node_name }}</h1>
             <h2>Ip: {{ ip_address }}</h2>
-            <h3>Hora del Sistema: {{ system_time }}</h3>
-            <h3>Hora Simulada: {{ simulated_time }}</h3>
+            <h3 id="simulated-time">Hora Simulada: {{ simulated_time }}</h3> 
+            <p>Creación Nodo Hora del Sistema: {{ system_time }}</p>
         </div>
         <div class="logs">
             <h2>Logs de Envío y Recepción de Datos</h2>
@@ -94,34 +97,51 @@
         </div>
     </div>
 
-    <!-- Script para la conexión con WebSocket -->
-    <!-- Script para la conexión con WebSocket -->
-<script>
-    const socket = io('http://localhost:3000');
-
-    socket.on('connect', () => {
-        console.log('Conectado al servidor WebSocket');
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Desconectado del servidor WebSocket');
-    });
-
-    socket.on('connect_error', (error) => {
-        console.log('Error de conexión:', error);
-    });
-
-    // Escuchar el evento de logs desde el servidor Flask
-    socket.on('log_message', (message) => {
-        console.log('Log recibido:', message);
-        // Agregar el log a la lista de logs en la página HTML
-        const logsList = document.getElementById('logs-list');
-        const logItem = document.createElement('li');
-        logItem.textContent = message; // Asegúrate de que el mensaje sea un string legible
-        logsList.appendChild(logItem);
-    });
-</script>
-
+    <script>
+        const socket = io('http://localhost:3000');  // Asegúrate de que esto apunte al servidor correcto
+    
+        // Inicializar la hora simulada del nodo
+        const simulatedTimeElement = document.getElementById("simulated-time");
+        let simulatedTime = new Date();
+        const [hour, minute, second] = "{{ simulated_time }}".split(':').map(Number);
+        simulatedTime.setHours(hour, minute, second);
+    
+        // Incrementar el reloj cada segundo para mantenerlo actualizado
+        setInterval(() => {
+            simulatedTime.setSeconds(simulatedTime.getSeconds() + 1);
+            if (simulatedTimeElement) {
+                simulatedTimeElement.textContent = "Hora Simulada: " + simulatedTime.toLocaleTimeString();
+            }
+        }, 1000);
+    
+        socket.on('connect', () => {
+            console.log('Conectado al servidor WebSocket');
+        });
+    
+        socket.on('disconnect', () => {
+            console.log('Desconectado del servidor WebSocket');
+        });
+    
+        socket.on('connect_error', (error) => {
+            console.error('Error de conexión:', error);
+        });
+    
+        // Modificar el mensaje del log para anteponer la hora simulada
+        socket.on('log_message', (message) => {
+            const logsList = document.getElementById('logs-list');
+            
+            // Obtener la hora simulada actual
+            const simulatedTimeString = simulatedTime.toLocaleTimeString();
+            
+            // Anteponer la hora simulada al mensaje del log
+            const modifiedMessage = `[${simulatedTimeString}] ${message}`;
+            
+            // Añadir el mensaje modificado al log
+            const listItem = document.createElement('li');
+            listItem.textContent = modifiedMessage;
+            logsList.appendChild(listItem);
+        });
+    </script>
+    
 </body>
-
 </html>

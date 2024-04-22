@@ -8,22 +8,34 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template
 
 from app import app, socketio
-
+simulated_start_time = None
 
 @app.route('/')
 def index():
+    global simulated_start_time
     node_name = os.getenv('NODE_NAME', 'Nodo1')
     ip_address = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
-    system_time = datetime.now().strftime('%H:%M:%S')
-    random_seconds = random.randint(60, 120)
-    add_or_subtract = random.choice([True, False])
-    if add_or_subtract:
-        simulated_time = (datetime.now() + timedelta(seconds=random_seconds)).strftime('%H:%M:%S')
-    else:
-        simulated_time = (datetime.now() - timedelta(seconds=random_seconds)).strftime('%H:%M:%S')
+    system_time = datetime.now()
 
-    return render_template('index.html', node_name=node_name, ip_address=ip_address, system_time=system_time, simulated_time=simulated_time)
-
+    # Si no hay hora simulada inicial, generarla
+    if simulated_start_time is None:
+        random_seconds = random.randint(60, 120)
+        add_or_subtract = random.choice([True, False])
+        
+        if add_or_subtract:
+            simulated_start_time = system_time + timedelta(seconds=random_seconds)
+        else:
+            simulated_start_time = system_time - timedelta(seconds=random_seconds)
+    
+    # Pasar simulated_start_time como parte del contexto
+    return render_template(
+        'index.html', 
+        node_name=node_name, 
+        ip_address=ip_address,
+        system_time=system_time.strftime('%H:%M:%S'),
+        simulated_time=simulated_start_time.strftime('%H:%M:%S')
+    )
+    
 # Endpoint para recibir la hora del coordinador
 @socketio.on('coordinator_time')
 def handle_coordinator_time(coordinator_time):

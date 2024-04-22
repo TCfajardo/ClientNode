@@ -11,8 +11,5 @@ def handle_some_event(data):
 
 @socketio.on('log_message')
 def handle_log_message(message):
-    print(message)
-    # Emitir el mensaje de log al cliente
+    print(f'Log recibido: {message}')
     socketio.emit('log_message', message)
-
-

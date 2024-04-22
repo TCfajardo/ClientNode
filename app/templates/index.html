@@ -122,22 +122,6 @@
     });
 </script>
 
-
-    <!-- Script para la recarga automática de la página solo si no hay logs mostrándose -->
-<script>
-    setInterval(function() {
-        // Verificar si hay logs mostrándose en la página
-        const logsList = document.getElementById('logs-list');
-        const hasLogs = logsList && logsList.children.length > 0;
-
-        // Recargar la página solo si no hay logs mostrándose
-        if (!hasLogs) {
-            window.location.reload();
-        }
-    }, 2000); // Recargar la página cada 2 segundos (2000 milisegundos)
-</script>
-
-
 </body>
 
 </html>

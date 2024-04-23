@@ -1,6 +1,5 @@
 from app import socketio
 
-
 @socketio.on('connect')
 def on_connect():
     print('Cliente conectado al servidor WebSocket')

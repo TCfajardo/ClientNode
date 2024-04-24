@@ -72,7 +72,6 @@ def handle_current_simulated_time():
 
 
 
-
 # Método para recibir la hora del coordinador
 @socketio.on('coordinator_time')
 def handle_coordinator_time(coordinator_received_time):

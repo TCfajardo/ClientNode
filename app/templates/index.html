@@ -113,8 +113,12 @@
                 simulatedTimeElement.textContent = "Hora Simulada: " + simulatedTime.toLocaleTimeString();
             }
             console.log('Hora simulada enviada:', simulatedTime.toLocaleTimeString());
-
-            socket.emit('current_simulated_time', simulatedTime.toLocaleTimeString());
+    
+            // Formatear la hora simulada en formato HH:MM:SS
+            const formattedTime = pad(simulatedTime.getHours()) + ":" + pad(simulatedTime.getMinutes()) + ":" + pad(simulatedTime.getSeconds());
+    
+            socket.emit('current_simulated_time', formattedTime);
+    
         }, 1000);
     
         socket.on('connect', () => {
@@ -132,19 +136,28 @@
         // Modificar el mensaje del log para anteponer la hora simulada
         socket.on('log_message', (message) => {
             const logsList = document.getElementById('logs-list');
-            
+    
             // Obtener la hora simulada actual
             const simulatedTimeString = simulatedTime.toLocaleTimeString();
-            
+    
             // Anteponer la hora simulada al mensaje del log
             const modifiedMessage = `[${simulatedTimeString}] ${message}`;
-            
+    
             // Añadir el mensaje modificado al log
             const listItem = document.createElement('li');
             listItem.textContent = modifiedMessage;
             logsList.appendChild(listItem);
         });
+    
+        // Función para agregar ceros a la izquierda si es necesario
+        function pad(number) {
+            if (number < 10) {
+                return '0' + number;
+            }
+            return number;
+        }
     </script>
+    
     
 </body>
 </html>

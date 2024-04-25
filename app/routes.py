@@ -11,18 +11,22 @@ from app import app, socketio
 
 load_dotenv()
 
-current_simulated_time = datetime.now().strftime('%H:%M:%S')
+# Obtener la hora simulada inicial
+initial_simulated_time = datetime.now().strftime('%H:%M:%S')
+
+# Variable global para almacenar la hora simulada actual
+current_simulated_time = initial_simulated_time
+
+# Después de la asignación inicial
+print("Valor inicial de current_simulated_time:", current_simulated_time)
 
 # Variable global para almacenar la hora recibida del coordinador
 coordinator_time = None
 
 node_time_difference = None
-# Variable global para almacenar la hora simulada
-simulated_start_time = datetime.now().strftime('%H:%M:%S')
-
 
 # Convertir la hora simulada a objeto datetime.time
-simulated_start_time = datetime.strptime(simulated_start_time, '%H:%M:%S').time()
+simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
 
 @app.route('/')
 def index():
@@ -90,7 +94,6 @@ def calculate_time_difference():
         # También enviar la URL del nodo
         socketio.emit('time_difference', {'difference': time_difference.total_seconds(), 'node_url': node_url})  # Convertir a segundos
         # Llamar a la función para actualizar la hora simulada
-        update_simulated_time()
     else:
         print('No se puede calcular la diferencia porque la hora simulada o la hora del coordinador es nula.')
 
@@ -101,6 +104,7 @@ def handle_node_time_difference(node_difference):
     try:
         # Obtener la diferencia de tiempo del nodo respecto al promedio
         node_time_difference = node_difference['difference']
+        print("Valor actual de current_simulated_time:", current_simulated_time)
         print('Diferencia de tiempo recibida desde el nodo:', node_time_difference)
         # Llamar a la función para actualizar la hora simulada después de recibir la diferencia de tiempo del nodo
         update_simulated_time()
@@ -127,5 +131,3 @@ def update_simulated_time():
             print('Hora simulada actualizada:', current_simulated_time.strftime('%H:%M:%S'))
     except Exception as e:
         print('Error al actualizar la hora simulada:', e)
-
-

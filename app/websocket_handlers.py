@@ -3,6 +3,7 @@ from app import socketio
 @socketio.on('connect')
 def on_connect():
     print('Cliente conectado al servidor WebSocket')
+    socketio.emit('join_vue_clients')
 
 @socketio.on('some_event')
 def handle_some_event(data):

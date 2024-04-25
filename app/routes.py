@@ -11,36 +11,47 @@ from app import app, socketio
 
 load_dotenv()
 
-# Variable global para almacenar la hora recibida del coordinador
 coordinator_time = None
-
+simulated_start_time = None
 node_time_difference = None
-
+current_simulated_time = None
 
 @app.route('/')
 def index():
-    global current_simulated_time
+    global simulated_start_time
+
     node_name = os.getenv('NODE_NAME', 'Nodo1')
-    ip_address = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
+    ip_address = os.getenv('NODE_IP', 'localhost')
     system_time = datetime.now()
 
-    simulated_start_time = datetime.now().strftime('%H:%M:%S')
-    socketio.emit('simulated_time', simulated_start_time)
-
+    if simulated_start_time is None:
+        random_seconds = random.randint(60, 200)
+        add_or_subtract = random.choice([True, False])
+        if add_or_subtract:
+            simulated_start_time = system_time + timedelta(seconds=random_seconds)
+        else:
+            simulated_start_time = system_time - timedelta(seconds=random_seconds)
+    socketio.emit('simulated_time', simulated_start_time.strftime('%H:%M:%S'))
+    print("Simulated start:", simulated_start_time.strftime('%H:%M:%S'))
+    print("System start:", system_time.strftime('%H:%M:%S'))
+    
     return render_template(
-        'index.html', 
-        NODE_NAME=os.getenv('NODE_NAME'), 
+        'index.html',
+        node_name=node_name,
         ip_address=ip_address,
         system_time=system_time.strftime('%H:%M:%S'),
-        simulated_time=simulated_start_time
+        simulated_time=simulated_start_time.strftime('%H:%M:%S')
     )
     
 @socketio.on('current_simulated_time')
 def update_simulated_time(formatted_time):
-    global current_simulated_time
+    global current_simulated_time, simulated_start_time
     try:
         current_simulated_time = datetime.strptime(formatted_time, '%H:%M:%S').time()  
-        print("Valor inicial de current_simulated_time:", current_simulated_time)
+
+        simulated_start_time_str = simulated_start_time.strftime('%H:%M:%S')
+
+        print("Valor inicial de current_simulated_time:", simulated_start_time_str)
         print("Simulated time received:", current_simulated_time.strftime('%H:%M:%S'))
     except ValueError:
         print("Error parsing simulated time:", formatted_time)

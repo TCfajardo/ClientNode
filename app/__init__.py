@@ -13,3 +13,6 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app, cors_allowed_origins='*')  # Permite CORS para WebSocket
 
 from app import routes, websocket_handlers
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)

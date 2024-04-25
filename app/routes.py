@@ -17,6 +17,13 @@ initial_simulated_time = datetime.now().strftime('%H:%M:%S')
 # Variable global para almacenar la hora simulada actual
 current_simulated_time = initial_simulated_time
 
+simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
+
+if initial_simulated_time:
+    simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
+    current_simulated_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time() 
+
+
 # Después de la asignación inicial
 print("Valor inicial de current_simulated_time:", current_simulated_time)
 
@@ -25,8 +32,6 @@ coordinator_time = None
 
 node_time_difference = None
 
-# Convertir la hora simulada a objeto datetime.time
-simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
 
 @app.route('/')
 def index():
@@ -35,20 +40,16 @@ def index():
     ip_address = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
     system_time = datetime.now()
 
-    # Si no hay hora simulada inicial, generarla
     if simulated_start_time is None:
-        random_seconds = random.randint(60, 120)
+        random_seconds = random.randint(60, 200)
         add_or_subtract = random.choice([True, False])
 
         if add_or_subtract:
             simulated_start_time = system_time + timedelta(seconds=random_seconds)
         else:
             simulated_start_time = system_time - timedelta(seconds=random_seconds)
-
-    # Emitir la hora simulada a través del socket para que se actualice en el frontend
     socketio.emit('simulated_time', simulated_start_time.strftime('%H:%M:%S'))
 
-    # Pasar simulated_start_time como parte del contexto
     return render_template(
         'index.html', 
         node_name=node_name, 
@@ -56,6 +57,17 @@ def index():
         system_time=system_time.strftime('%H:%M:%S'),
         simulated_time=simulated_start_time.strftime('%H:%M:%S')
     )
+    
+@socketio.on('current_simulated_time')
+def update_simulated_time(formatted_time):
+    global current_simulated_time, simulated_start_time
+    try:
+        current_simulated_time = datetime.strptime(formatted_time, '%H:%M:%S').time()  
+        print("Valor inicial de current_simulated_time:", simulated_start_time)
+        print("Simulated time received:", current_simulated_time.strftime('%H:%M:%S'))
+    except ValueError:
+        print("Error parsing simulated time:", formatted_time)
+
 
 # Método para recibir la hora del coordinador
 @socketio.on('coordinator_time')
@@ -116,18 +128,24 @@ def update_simulated_time():
     global current_simulated_time, node_time_difference
     try:
         if node_time_difference is not None:
-            # Convertir la diferencia de tiempo a un objeto timedelta
-            time_difference = timedelta(seconds=node_time_difference)
+            # Convertir la diferencia de tiempo a milisegundos
+            time_difference_ms = node_time_difference * 1000
+            
             # Obtener la fecha actual
             current_date = datetime.now().date()
+            
             # Convertir la hora simulada actual a un objeto datetime.time
             current_simulated_time = datetime.strptime(current_simulated_time, '%H:%M:%S').time()
+            
             # Crear un objeto datetime combinando la fecha actual y la hora simulada actual
             current_simulated_datetime = datetime.combine(current_date, current_simulated_time)
-            # Calcular la nueva hora simulada sumando la diferencia de tiempo
-            new_simulated_datetime = current_simulated_datetime + time_difference
-            # Actualizar la hora simulada
-            current_simulated_time = new_simulated_datetime.time()
-            print('Hora simulada actualizada:', current_simulated_time.strftime('%H:%M:%S'))
+            
+            # Calcular la nueva hora simulada sumando los milisegundos de la diferencia de tiempo
+            new_simulated_datetime = current_simulated_datetime + timedelta(milliseconds=time_difference_ms)
+            
+            # Actualizar la hora simulada convirtiendo el nuevo datetime a una cadena de caracteres
+            current_simulated_time = new_simulated_datetime.strftime('%H:%M:%S')
+            
+            print('Hora simulada actualizada:', current_simulated_time)
     except Exception as e:
         print('Error al actualizar la hora simulada:', e)

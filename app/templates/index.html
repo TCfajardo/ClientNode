@@ -100,7 +100,9 @@
     </div>
 
     <script>
-        const socket = io('http://localhost:3000');  // Asegúrate de que esto apunte al servidor correcto
+        const socketLogs = io('http://localhost:3000');  
+    
+        const socketTime = io('http://localhost:5003');  
     
         // Inicializar la hora simulada del nodo
         const simulatedTimeElement = document.getElementById("simulated-time");
@@ -114,57 +116,55 @@
             if (simulatedTimeElement) {
                 simulatedTimeElement.textContent = "Hora Simulada: " + simulatedTime.toLocaleTimeString();
             }
-            
+    
             console.log('Hora simulada enviada:', simulatedTime.toLocaleTimeString());
-            
+    
             const formattedTime = pad(simulatedTime.getHours()) + ":" + pad(simulatedTime.getMinutes()) + ":" + pad(simulatedTime.getSeconds());
     
-            socket.emit('current_simulated_time', formattedTime);
-    
+            // Emitir la hora simulada al servidor Flask-Socket.IO
+            socketTime.emit('current_simulated_time', formattedTime);
         }, 1000);
     
-        socket.on('connect', () => {
-            console.log('Conectado al servidor WebSocket');
+        // Eventos para la conexión de logs
+        socketLogs.on('connect', () => {
+            console.log('Conectado al servidor de logs');
         });
     
-        socket.on('disconnect', () => {
-            console.log('Desconectado del servidor WebSocket');
+        socketLogs.on('disconnect', () => {
+            console.log('Desconectado del servidor de logs');
     
-            // Añadir un log de desconexión
             const logsList = document.getElementById('logs-list');
             const simulatedTimeString = simulatedTime.toLocaleTimeString();
             const message = "El servidor WebSocket se ha desconectado.";
-            
+    
             const listItem = document.createElement('li');
             listItem.textContent = `[${simulatedTimeString}] ${message}`;
             logsList.appendChild(listItem);  // Añadir al log
         });
     
-        socket.on('connect_error', (error) => {
-            console.error('Error de conexión:', error);
+        socketLogs.on('connect_error', (error) => {
+            console.error('Error de conexión con el servidor de logs:', error);
         });
     
-        // Modificar el mensaje del log para anteponer la hora simulada
-        socket.on('log_message', (message) => {
-            console.log('Log recibido en el cliente:', message);
+        socketLogs.on('log_message', (message) => {
+            console.log('Log recibido:', message);
             const logsList = document.getElementById('logs-list');
             const simulatedTimeString = simulatedTime.toLocaleTimeString();
-            
+    
             const modifiedMessage = `[${simulatedTimeString}] ${message}`;
             const listItem = document.createElement('li');
             listItem.textContent = modifiedMessage;
             logsList.appendChild(listItem);
         });
     
-        // Función para agregar ceros a la izquierda si es necesario
+        // Función para agregar ceros a la izquierda
         function pad(number) {
-            if (number < 10) {
-                return '0' + number;
-            }
-            return number;
+            return number < 10 ? '0' + number : '' + number;
         }
+    
     </script>
     
+
 
 </body>
 

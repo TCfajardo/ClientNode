@@ -11,22 +11,6 @@ from app import app, socketio
 
 load_dotenv()
 
-# Obtener la hora simulada inicial
-initial_simulated_time = datetime.now().strftime('%H:%M:%S')
-
-# Variable global para almacenar la hora simulada actual
-current_simulated_time = initial_simulated_time
-
-simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
-
-if initial_simulated_time:
-    simulated_start_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time()
-    current_simulated_time = datetime.strptime(initial_simulated_time, '%H:%M:%S').time() 
-
-
-# Después de la asignación inicial
-print("Valor inicial de current_simulated_time:", current_simulated_time)
-
 # Variable global para almacenar la hora recibida del coordinador
 coordinator_time = None
 
@@ -35,35 +19,28 @@ node_time_difference = None
 
 @app.route('/')
 def index():
-    global simulated_start_time
+    global current_simulated_time
     node_name = os.getenv('NODE_NAME', 'Nodo1')
     ip_address = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
     system_time = datetime.now()
 
-    if simulated_start_time is None:
-        random_seconds = random.randint(60, 200)
-        add_or_subtract = random.choice([True, False])
-
-        if add_or_subtract:
-            simulated_start_time = system_time + timedelta(seconds=random_seconds)
-        else:
-            simulated_start_time = system_time - timedelta(seconds=random_seconds)
-    socketio.emit('simulated_time', simulated_start_time.strftime('%H:%M:%S'))
+    simulated_start_time = datetime.now().strftime('%H:%M:%S')
+    socketio.emit('simulated_time', simulated_start_time)
 
     return render_template(
         'index.html', 
-        node_name=node_name, 
+        NODE_NAME=os.getenv('NODE_NAME'), 
         ip_address=ip_address,
         system_time=system_time.strftime('%H:%M:%S'),
-        simulated_time=simulated_start_time.strftime('%H:%M:%S')
+        simulated_time=simulated_start_time
     )
     
 @socketio.on('current_simulated_time')
 def update_simulated_time(formatted_time):
-    global current_simulated_time, simulated_start_time
+    global current_simulated_time
     try:
         current_simulated_time = datetime.strptime(formatted_time, '%H:%M:%S').time()  
-        print("Valor inicial de current_simulated_time:", simulated_start_time)
+        print("Valor inicial de current_simulated_time:", current_simulated_time)
         print("Simulated time received:", current_simulated_time.strftime('%H:%M:%S'))
     except ValueError:
         print("Error parsing simulated time:", formatted_time)
@@ -73,6 +50,9 @@ def update_simulated_time(formatted_time):
 @socketio.on('coordinator_time')
 def handle_coordinator_time(coordinator_received_time):
     global coordinator_time, current_simulated_time
+    
+    # Declaración global de current_simulated_time
+    global current_simulated_time
     
     # Limpiar la cadena antes de analizarla
     cleaned_time_str = coordinator_received_time.replace('\xa0', '')
@@ -93,7 +73,7 @@ def calculate_time_difference():
         # Obtener la fecha actual para agregarla a las horas simuladas
         current_date = datetime.now().date()
         # Convertir las horas simuladas y de coordinador en objetos datetime completos
-        current_simulated_datetime = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=int(current_simulated_time.split(':')[0]), minutes=int(current_simulated_time.split(':')[1]), seconds=int(current_simulated_time.split(':')[2]))
+        current_simulated_datetime = datetime.combine(current_date, current_simulated_time)
         coordinator_datetime = datetime.combine(current_date, coordinator_time)
         # Calcular la diferencia entre las horas simuladas y de coordinador
         time_difference = coordinator_datetime - current_simulated_datetime
@@ -108,6 +88,7 @@ def calculate_time_difference():
         # Llamar a la función para actualizar la hora simulada
     else:
         print('No se puede calcular la diferencia porque la hora simulada o la hora del coordinador es nula.')
+
 
 # Método para recibir la diferencia de tiempo de cada nodo respecto al promedio
 @socketio.on('node_time_difference')
@@ -131,21 +112,19 @@ def update_simulated_time():
             # Convertir la diferencia de tiempo a milisegundos
             time_difference_ms = node_time_difference * 1000
             
-            # Obtener la fecha actual
-            current_date = datetime.now().date()
+            # Obtener la fecha y hora actual
+            current_datetime = datetime.now()
             
-            # Convertir la hora simulada actual a un objeto datetime.time
-            current_simulated_time = datetime.strptime(current_simulated_time, '%H:%M:%S').time()
-            
-            # Crear un objeto datetime combinando la fecha actual y la hora simulada actual
-            current_simulated_datetime = datetime.combine(current_date, current_simulated_time)
+            # Crear un objeto datetime con la fecha actual y la hora simulada
+            current_simulated_datetime = datetime.combine(current_datetime.date(), current_simulated_time)
             
             # Calcular la nueva hora simulada sumando los milisegundos de la diferencia de tiempo
             new_simulated_datetime = current_simulated_datetime + timedelta(milliseconds=time_difference_ms)
             
-            # Actualizar la hora simulada convirtiendo el nuevo datetime a una cadena de caracteres
-            current_simulated_time = new_simulated_datetime.strftime('%H:%M:%S')
+            # Actualizar la hora simulada
+            current_simulated_time = new_simulated_datetime.time()
             
-            print('Hora simulada actualizada:', current_simulated_time)
+            print('Hora simulada actualizada:', current_simulated_time.strftime('%H:%M:%S'))
     except Exception as e:
         print('Error al actualizar la hora simulada:', e)
+        

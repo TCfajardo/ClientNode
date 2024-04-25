@@ -100,9 +100,17 @@
     </div>
 
     <script>
-        const socketLogs = io('http://localhost:3000');  
+
+const NODE_PORT = "{{ NODE_PORT }}";
+    const NODE_NAME = "{{ NODE_NAME }}";
+    const NODE_IP = "{{ NODE_IP }}";
+    const IP_COORDINATOR = "{{ IP_COORDINATOR }}";
+
     
-        const socketTime = io('http://localhost:5003');  
+        const socketLogs = io("{{ IP_COORDINATOR }}");  // Utiliza la variable IP_COORDINATOR del archivo .env
+
+        const socketTime = io("http://{{ NODE_IP }}:{{ NODE_PORT }}");  // Utiliza las variables NODE_IP y NODE_PORT del archivo .env
+
     
         // Inicializar la hora simulada del nodo
         const simulatedTimeElement = document.getElementById("simulated-time");

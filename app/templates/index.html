@@ -159,14 +159,23 @@
             logsList.appendChild(listItem);
         });
 
+        socketTime.on('log_message', (message) => {
+            console.log('Log recibido:', message);
+            const logsList = document.getElementById('logs-list');
+            const simulatedTimeString = simulatedTime.toLocaleTimeString();
+
+            const modifiedMessage = `[${simulatedTimeString}] ${message}`;
+            const listItem = document.createElement('li');
+            listItem.textContent = modifiedMessage;
+            logsList.appendChild(listItem);
+        });
+
         // Función para agregar ceros a la izquierda
         function pad(number) {
             return number < 10 ? '0' + number : '' + number;
         }
 
     </script>
-
-
 
 </body>
 

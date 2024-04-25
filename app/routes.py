@@ -62,17 +62,16 @@ def update_simulated_time(formatted_time):
 def handle_coordinator_time(coordinator_received_time):
     global coordinator_time, current_simulated_time
     
-    # Declaración global de current_simulated_time
-    global current_simulated_time
-    
     # Limpiar la cadena antes de analizarla
     cleaned_time_str = coordinator_received_time.replace('\xa0', '')
     
     try:
         # Analizar la hora del coordinador con el formato correcto
         coordinator_time = time.fromisoformat(cleaned_time_str)
-        print('Hora del coordinador recibida:', coordinator_time)
-        print('Hora simulada:', current_simulated_time)
+        print('-------Hora del coordinador recibida:', coordinator_time)
+        print('-------Hora actual simulada:', current_simulated_time)
+        log_message = f'Hora del coordinador recibida: {coordinator_time}'
+        socketio.emit('log_message', log_message) 
         calculate_time_difference()
     except ValueError as e:
         print('Error al analizar la hora del coordinador:', e)
@@ -81,21 +80,39 @@ def handle_coordinator_time(coordinator_received_time):
 def calculate_time_difference():
     global current_simulated_time, coordinator_time
     if current_simulated_time is not None and coordinator_time is not None:
-        # Obtener la fecha actual para agregarla a las horas simuladas
         current_date = datetime.now().date()
-        # Convertir las horas simuladas y de coordinador en objetos datetime completos
+        
         current_simulated_datetime = datetime.combine(current_date, current_simulated_time)
+        print('-------------------Hora actual con date:', current_simulated_datetime)
+        print('-------------------Hora actual con date:', current_simulated_datetime)
+        
         coordinator_datetime = datetime.combine(current_date, coordinator_time)
         # Calcular la diferencia entre las horas simuladas y de coordinador
         time_difference = coordinator_datetime - current_simulated_datetime
+        
         print('Diferencia entre la hora simulada y la hora del coordinador:', time_difference)
+        total_seconds = abs(time_difference.total_seconds())
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        seconds = int(total_seconds % 60)
+
+        # Formato legible para el log
+        formatted_time_difference = f"{hours:02}:{minutes:02}:{seconds:02}"
+        
+        # Construir el mensaje de log
+        difference_log = f"Diferencia entre la hora del nodo y la hora del coordinador: {formatted_time_difference}"
+        
+        # Emitir el mensaje de log
+        socketio.emit('log_message', difference_log)
+
         # Obtener el puerto del archivo .env
-        node_port = os.getenv('NODE_PORT', '5000')  # Valor predeterminado si NODE_PORT no está definido en el archivo .env
+        node_port = os.getenv('NODE_PORT', '5000') 
+        ip_address = os.getenv('NODE_IP', 'localhost')
         # Construir la URL del nodo
-        node_url = f'http://localhost:{node_port}'
+        node_url = f'http://{ip_address}:{node_port}'
         # Emitir la diferencia calculada como un evento de socket
         # También enviar la URL del nodo
-        socketio.emit('time_difference', {'difference': time_difference.total_seconds(), 'node_url': node_url})  # Convertir a segundos
+        socketio.emit('time_difference', {'difference': time_difference.total_seconds(), 'node_url': node_url})
         # Llamar a la función para actualizar la hora simulada
     else:
         print('No se puede calcular la diferencia porque la hora simulada o la hora del coordinador es nula.')
